@@ -1,6 +1,6 @@
 (ns influx-cp.core
   (:require [clj-http.client :as client]
-            [clojure.string :refer [join]]
+            [clojure.string :refer [join blank?]]
             [clojure.data.json :refer [read-str]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.io :refer [as-url]])
@@ -10,7 +10,12 @@
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
-(defn join-key-val [col] (join "," (map #(join "=" %) col)))
+(defn join-key-val [col] (join "," (map #(join "=" %)
+                                        (filter (fn [[k v]]
+                                                  (and
+                                                   (not (nil? v))
+                                                   (if (string? v) (not (blank? v)) true)))
+                                                col))))
 
 (defn json-to-line [json-str]
   (let [json (read-str json-str)]
@@ -51,7 +56,7 @@
   (str target "/write?db=" db))
 
 (defn build-params
-  [{db :source-db measure :measurement tags :tags, :or {:tags {}}}]
+  [{db :source-db measure :measurement tags :tag, :or {:tag {}}}]
   {:query-params {"db" db
                   "epoch" "ms"
                   "q" (build-query measure tags)}})
