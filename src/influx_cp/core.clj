@@ -53,13 +53,15 @@
   (str source "/query"))
 
 (defn build-target-url [{target :target-url db :target-db}]
-  (str target "/write?db=" db))
+  (str target "/write?db=" db "&precision=n"))
 
 (defn build-params
-  [{db :source-db measure :measurement tags :tag, :or {:tag {}}}]
-  {:query-params {"db" db
-                  "epoch" "ms"
-                  "q" (build-query measure tags)}})
+  [{:keys [source-db measurement tag username password], :or {:tag {}}}]
+  {:query-params {"db" source-db
+                  "u" username
+                  "p" password
+                  "epoch" "ns"
+                  "q" (build-query measurement tag)}})
 
 (def cli-options
   [[nil "--source-url URL" "source InfluxDB URL"

@@ -110,6 +110,8 @@
   (testing "BUILDING SOURCE URL PARAMS"
     (is (= {:query-params
             {"db" "NOAA_water_database",
-             "epoch" "ms",
+             "u" "username"
+             "p" "password"
+             "epoch" "ns",
              "q" "SELECT * FROM h2o_quality GROUP BY *"}}
            (build-params options)))))
