@@ -80,6 +80,8 @@
                 (let [[_ k v] (re-matches #"(.+)=(.+)" opt)]
                   {k v}))
     :assoc-fn (fn [m k kv] (update-in m [k] merge kv))]
+   ["-u" "--username USERNAME" "Username"]
+   ["-p" "--password PASSWORD" "Password"]
    ["-h" "--help"]])
 
 (defn exit [status msg]

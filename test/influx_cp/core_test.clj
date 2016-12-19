@@ -83,7 +83,7 @@
     (is (= line-series-no-tags (json-to-line json-no-tags)))))
 
 
-(def cli-args ["--source-url" "http://localhost:8086" "--target-url" "http://localhost:8086" "--source-db" "NOAA_water_database" "--target-db" "noaa_test" "-m" "h2o_quality"])
+(def cli-args ["--source-url" "http://localhost:8086" "--target-url" "http://localhost:8086" "--source-db" "NOAA_water_database" "--target-db" "noaa_test" "-m" "h2o_quality" "-u" "username" "-p" "password"])
 
 (deftest parse-cli-args
   (testing "PARSING OF CLI ARGS"
@@ -93,7 +93,9 @@
             (as-url "http://localhost:8086"),
             :source-db "NOAA_water_database",
             :target-db "noaa_test",
-            :measurement "h2o_quality"}
+            :measurement "h2o_quality"
+            :username "username"
+            :password "password"}
            (:options (parse-opts cli-args cli-options))))))
 
 (def options (:options (parse-opts cli-args cli-options)))
