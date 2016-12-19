@@ -1,6 +1,6 @@
 (ns influx-cp.core
   (:require [clj-http.client :as client]
-            [clojure.string :refer [join]]
+            [clojure.string :refer [join blank?]]
             [clojure.data.json :refer [read-str]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.io :refer [as-url]])
@@ -10,7 +10,12 @@
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
-(defn join-key-val [col] (join "," (map #(join "=" %) col)))
+(defn join-key-val [col] (join "," (map #(join "=" %)
+                                        (filter (fn [[k v]]
+                                                  (and
+                                                   (not (nil? v))
+                                                   (if (string? v) (not (blank? v)) true)))
+                                                col))))
 
 (defn json-to-line [json-str]
   (let [json (read-str json-str)]
@@ -48,13 +53,15 @@
   (str source "/query"))
 
 (defn build-target-url [{target :target-url db :target-db}]
-  (str target "/write?db=" db))
+  (str target "/write?db=" db "&precision=n"))
 
 (defn build-params
-  [{db :source-db measure :measurement tags :tags, :or {:tags {}}}]
-  {:query-params {"db" db
-                  "epoch" "ms"
-                  "q" (build-query measure tags)}})
+  [{:keys [source-db measurement tag username password], :or {:tag {}}}]
+  {:query-params {"db" source-db
+                  "u" username
+                  "p" password
+                  "epoch" "ns"
+                  "q" (build-query measurement tag)}})
 
 (def cli-options
   [[nil "--source-url URL" "source InfluxDB URL"
@@ -73,6 +80,8 @@
                 (let [[_ k v] (re-matches #"(.+)=(.+)" opt)]
                   {k v}))
     :assoc-fn (fn [m k kv] (update-in m [k] merge kv))]
+   ["-u" "--username USERNAME" "Username"]
+   ["-p" "--password PASSWORD" "Password"]
    ["-h" "--help"]])
 
 (defn exit [status msg]
